@@ -1,0 +1,116 @@
+const int LED1 = 13; // Rojo
+const int LED2 = 12; // Amarillo
+const int LED3 = 11; // Verde
+const int pul = 7;
+
+int modo = 5; // Inicia en semáforo normal
+bool estadoBotonAnterior = HIGH;
+
+// Variables para temporización
+unsigned long tiempoAnterior = 0;
+int fase = 0;
+
+void setup() {
+  pinMode(LED1, OUTPUT);
+  pinMode(LED2, OUTPUT);
+  pinMode(LED3, OUTPUT);
+  pinMode(pul, INPUT_PULLUP);
+}
+
+void loop() {
+
+  bool estadoBoton = digitalRead(pul);
+
+  if (estadoBoton == LOW && estadoBotonAnterior == HIGH) {
+    modo++;
+    if (modo > 5) {
+      modo = 1;
+    }
+
+    // Reinicia fases al cambiar modo
+    fase = 0;
+    tiempoAnterior = millis();
+  }
+
+  estadoBotonAnterior = estadoBoton;
+
+
+  switch (modo) {
+
+    case 1: // Solo verde
+      digitalWrite(LED3, HIGH);
+      digitalWrite(LED2, LOW);
+      digitalWrite(LED1, LOW);
+      break;
+
+    case 2: // Todos encendidos
+      digitalWrite(LED3, HIGH);
+      digitalWrite(LED2, HIGH);
+      digitalWrite(LED1, HIGH);
+      break;
+
+    case 3: // Amarillo intermitente
+      if (millis() - tiempoAnterior >= 500) {
+        tiempoAnterior = millis();
+        digitalWrite(LED2, !digitalRead(LED2));
+      }
+      digitalWrite(LED1, LOW);
+      digitalWrite(LED3, LOW);
+      break;
+
+    case 4: // Todos apagados
+      digitalWrite(LED3, LOW);
+      digitalWrite(LED2, LOW);
+      digitalWrite(LED1, LOW);
+      break;
+
+    case 5: // Semáforo normal automático
+
+      unsigned long tiempoActual = millis();
+
+      switch (fase) {
+
+        case 0: // Rojo
+          digitalWrite(LED1, HIGH);
+          digitalWrite(LED2, LOW);
+          digitalWrite(LED3, LOW);
+          if (tiempoActual - tiempoAnterior >= 3000) {
+            tiempoAnterior = tiempoActual;
+            fase = 1;
+          }
+          break;
+
+        case 1: // Amarillo
+          digitalWrite(LED1, LOW);
+          digitalWrite(LED2, HIGH);
+          digitalWrite(LED3, LOW);
+          if (tiempoActual - tiempoAnterior >= 1000) {
+            tiempoAnterior = tiempoActual;
+            fase = 2;
+          }
+          break;
+
+        case 2: // Verde
+          digitalWrite(LED1, LOW);
+          digitalWrite(LED2, LOW);
+          digitalWrite(LED3, HIGH);
+          if (tiempoActual - tiempoAnterior >= 3000) {
+            tiempoAnterior = tiempoActual;
+            fase = 3;
+          }
+          break;
+
+        case 3: // Amarillo antes de rojo
+          digitalWrite(LED1, LOW);
+          digitalWrite(LED2, HIGH);
+          digitalWrite(LED3, LOW);
+          if (tiempoActual - tiempoAnterior >= 1000) {
+            tiempoAnterior = tiempoActual;
+            fase = 0; // vuelve a rojo
+          }
+          break;
+      }
+
+      break;
+  }
+}
