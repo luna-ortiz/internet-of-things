@@ -1,0 +1,82 @@
+const int LED1 = 13; // Rojo
+const int LED2 = 12; // Amarillo
+const int LED3 = 11; // Verde
+const int pul = 7;
+
+int modo = 5;
+bool estadoBotonAnterior = HIGH;
+
+unsigned long tiempoAnterior = 0;
+int fase = 0;
+
+void setup() {
+  pinMode(LED1, OUTPUT);
+  pinMode(LED2, OUTPUT);
+  pinMode(LED3, OUTPUT);
+  pinMode(pul, INPUT_PULLUP);
+}
+
+void loop() {
+
+  bool estadoBoton = digitalRead(pul);
+
+  // Botón simplificado
+  if (estadoBoton == LOW && estadoBotonAnterior == HIGH) {
+    modo++;
+    if (modo == 6) modo = 1;
+    fase = 0;
+    tiempoAnterior = millis();
+  }
+  estadoBotonAnterior = estadoBoton;
+
+  unsigned long tiempoActual = millis();
+
+  switch (modo) {
+
+    case 1: // Solo verde
+      digitalWrite(LED1, LOW);
+      digitalWrite(LED2, LOW);
+      digitalWrite(LED3, HIGH);
+      break;
+
+    case 2: // Todos intermitentes
+      if (tiempoActual - tiempoAnterior >= 500) {
+        tiempoAnterior = tiempoActual;
+        fase = !fase;
+      }
+      digitalWrite(LED1, fase);
+      digitalWrite(LED2, fase);
+      digitalWrite(LED3, fase);
+      break;
+
+    case 3: // Amarillo intermitente
+      if (tiempoActual - tiempoAnterior >= 500) {
+        tiempoAnterior = tiempoActual;
+        fase = !fase;
+      }
+      digitalWrite(LED1, LOW);
+      digitalWrite(LED3, LOW);
+      digitalWrite(LED2, fase);
+      break;
+
+    case 4: // Todos apagados
+      digitalWrite(LED1, LOW);
+      digitalWrite(LED2, LOW);
+      digitalWrite(LED3, LOW);
+      break;
+
+    case 5: // Semáforo normal
+
+      if (tiempoActual - tiempoAnterior >= 
+         (fase == 1 || fase == 3 ? 1000 : 3000)) {
+        fase++;
+        if (fase == 4) fase = 0;
+        tiempoAnterior = tiempoActual;
+      }
+
+      digitalWrite(LED1, fase == 0);
+      digitalWrite(LED2, fase == 1 || fase == 3);
+      digitalWrite(LED3, fase == 2);
+      break;
+  }
+}
