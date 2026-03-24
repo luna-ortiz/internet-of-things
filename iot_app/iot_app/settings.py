@@ -12,6 +12,11 @@ https://docs.djangoproject.com/en/6.0/ref/settings/
 
 from pathlib import Path
 
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -37,6 +42,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'weather_station',
 ]
 
 MIDDLEWARE = [
@@ -72,11 +78,28 @@ WSGI_APPLICATION = 'iot_app.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/6.0/ref/settings/#databases
 
+
 DATABASES = {
-    #default supabase, local= postgre, lite= sqlite3
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
         'NAME': BASE_DIR / 'db.sqlite3',
+    },
+    'local':
+    {
+        'ENGINE' :'django.db.backend.postgresql',
+        'NAME' : 'Internet of things',
+        'USER': 'postgres',
+        'PASSWORD' : os.getenv('LOCAL_DB_PASSWORD'),
+        'PORT' : '5432',
+    },
+    'supabase':
+    {
+        'ENGINE' :'django.db.backend.postgresql',
+        'NAME ': 'postgres',
+        'USER' : os.getenv('SUPABASE_DB_USER'),
+        'PASSWORD': os.getenv('SUPABASE_DB_PASWORD'),
+        'HOST' : os.getenv('SUPABASE_DB_HOST'),
+        'PORT' : '6543'
     }
 }
 
